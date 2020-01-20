@@ -1,0 +1,53 @@
+- name: create ext volume for instance
+  file: state=directory path={{ ext_activemq_artemis_instance_volume }} owner=1000
+
+- name: create ext tmp volume
+  file: state=directory path={{ ext_activemq_artemis_tmp_volume }} owner=root mode=1777
+
+- name: create instance if it does not exist
+  command: docker run -v "{{ ext_activemq_artemis_instance_volume }}:/var/lib/artemis-instance" kofonfor/activemq-artemis help
+  args:
+    creates: "{{ ext_activemq_artemis_instance_volume }}/bin"
+
+- name: put artemis-roles.properties
+  template: src=artemis-roles.properties dest={{ ext_activemq_artemis_instance_volume }}/etc/artemis-roles.properties
+
+- name: put artemis-users.properties
+  template: src=artemis-users.properties dest={{ ext_activemq_artemis_instance_volume }}/etc/artemis-users.properties
+
+- name: put artemis.profile
+  template: src=artemis.profile dest={{ ext_activemq_artemis_instance_volume }}/etc/artemis.profile
+
+- name: put bootstrap.xml
+  template: src=bootstrap.xml dest={{ ext_activemq_artemis_instance_volume }}/etc/bootstrap.xml
+
+- name: put broker.xml
+  template: src=broker.xml dest={{ ext_activemq_artemis_instance_volume }}/etc/broker.xml
+
+- name: put jolokia-access.xml
+  template: src=jolokia-access.xml dest={{ ext_activemq_artemis_instance_volume }}/etc/jolokia-access.xml
+
+- name: put logging.properties
+  template: src=logging.properties dest={{ ext_activemq_artemis_instance_volume }}/etc/logging.properties
+
+- name: put login.config
+  template: src=login.config dest={{ ext_activemq_artemis_instance_volume }}/etc/login.config
+
+- name: put management.xml
+  template: src=management.xml dest={{ ext_activemq_artemis_instance_volume }}/etc/management.xml
+
+- name: start an ActiveMQ Artemis container
+  docker_container:
+    image: kofonfor/activemq-artemis
+    state: started
+    read_only: yes
+    recreate: yes
+    restart_policy: always
+    hostname: "{{ ansible_hostname }}-{{ activemq_artemis_container_name }}"
+    ports:
+      - "{{ activemq_artemis_container_host_address }}:{{ activemq_artemis_broker_port }}:61616"
+      - "{{ activemq_artemis_container_host_address }}:{{ activemq_artemis_webconsole_port }}:8161"
+    volumes:
+      - "{{ ext_activemq_artemis_instance_volume }}:/var/lib/artemis-instance"
+      - "{{ ext_activemq_artemis_tmp_volume }}:/tmp"
+    name: "{{ activemq_artemis_container_name }}"

@@ -1,0 +1,7 @@
+activemq_artemis_container_host_address: 0.0.0.0
+activemq_artemis_container_name: activemq-artemis
+activemq_artemis_broker_port: 61616
+activemq_artemis_webconsole_port: 8161
+ext_activemq_artemis_tmp_volume: /var/lib/docker-extvols/activemq-artemis/tmp
+ext_activemq_artemis_instance_volume: /var/lib/docker-extvols/activemq-artemis/instance
+activemq_artemis_cluster_name: "my-cluster"
